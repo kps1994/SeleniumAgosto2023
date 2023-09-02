@@ -13,24 +13,29 @@ public class DatosPagoPage extends BasePage {
         PageFactory.initElements(driver, this);
     }
 
-    @FindBy(xpath = "//input[@placeholder='Enter Your Card Number']" )
+    @FindBy(xpath = "//input[@placeholder='Enter Your Card Number']")
     private WebElement txtNroTarjeta;
 
-    @FindBy(name = "month" )
+    @FindBy(name = "month")
     private WebElement cbMes;
 
-    @FindBy(name = "year" )
+    @FindBy(name = "year")
     private WebElement cbAnio;
 
-    @FindBy(id = "cvv_code" )
+    @FindBy(id = "cvv_code")
     private WebElement txtCvv;
 
-    public void ingresarDatos() {
-    txtNroTarjeta.sendKeys(DatosTarjetaPage.tarjeta);
-    new Select(cbMes).selectByVisibleText(DatosTarjetaPage.mes);
-    new Select(cbAnio).selectByVisibleText(DatosTarjetaPage.anio);
-    txtCvv.sendKeys(DatosTarjetaPage.cvv);
 
+    @FindBy(name = "submit")
+    private WebElement btnPagar;
+
+
+    public void ingresarDatos() {
+        txtNroTarjeta.sendKeys(DatosTarjetaPage.tarjeta);
+        new Select(cbMes).selectByVisibleText(DatosTarjetaPage.mes);
+        new Select(cbAnio).selectByVisibleText(DatosTarjetaPage.anio);
+        txtCvv.sendKeys(DatosTarjetaPage.cvv);
+        btnPagar.click();
 
     }
 
