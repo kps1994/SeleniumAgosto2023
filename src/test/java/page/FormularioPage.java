@@ -3,12 +3,20 @@ package page;
 import base.BasePage;
 import base.ConfigFileReader;
 import io.cucumber.datatable.DataTable;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVParser;
+import org.apache.commons.csv.CSVRecord;
+import org.openqa.selenium.*;
+import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.PageFactory;
 import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.Select;
+import util.Util;
 
+import java.io.Reader;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
 
@@ -17,6 +25,8 @@ public class FormularioPage extends BasePage {
         super(driver);
         PageFactory.initElements(driver, this);
     }
+
+    String CSV_FILE_PATH = "src/test/resources/data/test.csv";
 
     ConfigFileReader configFileReader = new ConfigFileReader();
 
@@ -29,6 +39,14 @@ public class FormularioPage extends BasePage {
     @FindBy(name = "lastname")
     private WebElement txtLastName;
 
+    @FindBy(name = "photo")
+    private WebElement btnImagen;
+
+    @FindBy(name = "continents")
+    private WebElement cbContinente;
+
+    @FindBy(xpath = "//button[text()='Button']")
+    private WebElement btnEnviar;
 
     public void ingresarUrl() {
         driver.get(configFileReader.getProp("url"));
@@ -43,9 +61,77 @@ public class FormularioPage extends BasePage {
         for (int i = 0; i < lista.size(); i++) {
             txtFirstName.sendKeys(lista.get(i).get("firstName"));
             txtLastName.sendKeys(lista.get(i).get("lastName"));
+            driver.findElement(By.xpath("//input[@value='" + lista.get(i).get("sex") + "']")).click();
+            driver.findElement(By.xpath("//span[text()='" + lista.get(i).get("yearsExperience") + "']")).click();
+            driver.findElement(By.xpath("//input[@value='" + lista.get(i).get("profession") + "']")).click();
+        }
+    }
 
+
+    public void ingresarDatosCsv() {
+        try {
+            wait.until(ExpectedConditions.elementToBeClickable(btnBanner)).click();
+            Reader reader = Files.newBufferedReader(Paths.get(CSV_FILE_PATH));
+            CSVParser csvParser = new CSVParser(reader, CSVFormat.DEFAULT.withHeader());
+
+            for (CSVRecord csvRecord : csvParser) {
+                txtFirstName.sendKeys(csvRecord.get("firstName"));
+                txtLastName.sendKeys(csvRecord.get("lastName"));
+                driver.findElement(By.xpath("//input[@value='" + csvRecord.get("sex") + "']")).click();
+                driver.findElement(By.xpath("//span[text()='" + csvRecord.get("yearsExperience") + "']")).click();
+                driver.findElement(By.xpath("//input[@value='" + csvRecord.get("profession") + "']")).click();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
 
     }
+
+
+    public void cargaImagen() throws InterruptedException {
+        btnImagen.sendKeys("D:\\Proyectos Intellij\\SeleniumAgosto2023\\src\\test\\resources\\data\\cucumber.png");
+        Thread.sleep(5000);
+    }
+
+    public void seleccionarTipoSelenium(String tipoSelenium) {
+        System.out.println("------NO SELECCIONADO------");
+        System.out.println("isEnable " + driver.findElement(By.xpath("//input[@value='RC']")).isEnabled());
+        System.out.println("isSelected " + driver.findElement(By.xpath("//input[@value='RC']")).isSelected());
+        System.out.println("isDisplayed " + driver.findElement(By.xpath("//input[@value='RC']")).isDisplayed());
+
+        System.out.println("------SELECCIONADOS------");
+        driver.findElement(By.xpath("//input[@value='" + tipoSelenium + "']")).click();
+
+        WebElement seleniumTipo = driver.findElement(By.xpath("//input[@value='" + tipoSelenium + "']"));
+        System.out.println("isEnable " + seleniumTipo.isEnabled());
+        System.out.println("isSelected " + seleniumTipo.isSelected());
+        System.out.println("isDisplayed " + seleniumTipo.isDisplayed());
+    }
+
+    public void seleccionarContinente(String continente) {
+        new Select(cbContinente).selectByVisibleText(continente);
+    }
+
+    public void seleccionarComandoSelenium() {
+        Actions actions = new Actions(driver);
+        actions.keyDown(Keys.LEFT_CONTROL)//presionar ctrl izquierdo
+                .click(driver.findElement(By.xpath("//option[text()='Browser Commands']")))
+                .click(driver.findElement(By.xpath("//option[text()='Navigation Commands']")))
+                .keyUp(Keys.LEFT_CONTROL)//soltar ctrl izquierdo
+                .build()
+                .perform();
+        //Util.scrollToElement(btnEnviar);
+    }
+
+
+    public void clickBotonEnviar() {
+        btnEnviar.click();
+        //wait.until(ExpectedConditions.alertIsPresent()).dismiss();
+        Alert alerta = driver.switchTo().alert();
+        alerta.accept();
+
+
+    }
+
 }
